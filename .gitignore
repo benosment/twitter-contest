@@ -58,3 +58,5 @@ target/
 
 # ignore temp emacs files
 *~
+log.txt
+*.db

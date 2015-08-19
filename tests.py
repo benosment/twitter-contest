@@ -22,7 +22,7 @@ class TwitterUnitTest(unittest.TestCase):
 class DBUnitTest(unittest.TestCase):
 
     def setUp(self):
-        self.db = Database('test.db')
+        self.db = Database('test.db', force=True)
 
     def test_add_tweets(self):
         self.db.add_tweet('1', 'hello world')

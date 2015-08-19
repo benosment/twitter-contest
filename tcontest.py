@@ -3,66 +3,14 @@
 import os
 import sys
 import tweepy
-
 import settings
 import logging
 import logging.config
-import sqlite3
-from datetime import datetime
-from contextlib import closing
 
-database = 'tweet.db'
 
 def init_logger():
     logging.config.dictConfig(settings.LOGGING)
 
-
-def create_db(force=False):
-    'Set-up a new database, eliminating an old one if it exists'
-    if force:
-        try:
-            os.remove(database)
-        except OSError:
-            logging.error('could not remove old database')
-    with closing(sqlite3.connect(database)) as c:
-        try:
-            c.execute('CREATE TABLE tweets (id integer primary key, content text, [timestamp] timestamp)')
-            c.execute('CREATE TABLE users (id integer primary key, name text, [timestamp] timestamp)')
-        except sqlite3.OperationalError:
-            logging.error('could not create database')
-
-def add_tweet_to_db(tweet_id, tweet_content):
-    with closing(sqlite3.connect(database)) as c:
-        try:
-            c.execute('INSERT INTO tweets VALUES (?, ?, ?)',
-                      (tweet_id, tweet_content, datetime.now()))
-        except sqlite3.OperationalError:
-            logging.error('could not insert (%s, %s) into tweets table' %
-                          (tweet_id, tweet_content))
-        c.commit()
-
-def add_user_to_db(user_id, user_name):
-    with closing(sqlite3.connect(database)) as c:
-        try:
-            c.execute('INSERT INTO users VALUES (?, ?, ?)',
-                      (user_id, user_name, datetime.now()))
-        except sqlite3.OperationalError:
-            logging.error('could not insert (%s, %s) into users table' %
-                          (user_id, user_name))
-        c.commit()
-
-def del_user_from_db(user_id):
-    pass
-
-def get_tweet(tweet_id):
-    tweet = None
-    with closing(sqlite3.connect(database)) as c:
-        try:
-            tweet = c.execute('SELECT id FROM tweets WHERE id = ?',
-                              tweet_id).fetchone()
-        except sqlite3.OperationalError:
-            logging.error('query failed')
-    return tweet
 
 def get_user(user_id):
     user = None
@@ -73,6 +21,7 @@ def get_user(user_id):
         except sqlite3.OperationalError:
             logging.error('query failed')
     return user
+
 
 def oauth_login(consumer_key,
                 consumer_secret,
@@ -95,11 +44,7 @@ def oauth_login(consumer_key,
 
 if __name__ == '__main__':
     init_logger()
-    create_db()
-    add_tweet_to_db('1', 'hello world')
-    add_tweet_to_db('2', 'hello world')
-    print(get_tweet('1'))
-    print(get_tweet('3'))
+    db = Database('tweet.db')
     # api = oauth_login(settings.TWITTER_CONSUMER_KEY,
     #                   settings.TWITTER_CONSUMER_SECRET,
     #                   settings.TWITTER_ACCESS_TOKEN,

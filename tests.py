@@ -6,17 +6,16 @@ import tcontest
 import settings
 
 from database import Database
+from twitter import Twitter
 
 class TwitterUnitTest(unittest.TestCase):
 
     def setUp(self):
-        self.api = tcontest.oauth_login(settings.TWITTER_CONSUMER_KEY,
-                                        settings.TWITTER_CONSUMER_SECRET,
-                                        settings.TWITTER_ACCESS_TOKEN,
-                                        settings.TWITTER_ACCESS_TOKEN_SECRET)
+        db = Database('test.db', force=True)
+        self.twitter = Twitter(db)
 
     def test_authenticated(self):
-        self.assertEqual(self.api.me().name, 'Benjamin Osment')
+        self.assertEqual(self.twitter.api.me().name, 'Benjamin Osment')
 
 
 class DBUnitTest(unittest.TestCase):

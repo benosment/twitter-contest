@@ -2,8 +2,7 @@
 
 import os
 import sys
-import tweepy
-import settings
+
 import logging
 import logging.config
 
@@ -12,43 +11,10 @@ def init_logger():
     logging.config.dictConfig(settings.LOGGING)
 
 
-def get_user(user_id):
-    user = None
-    with closing(sqlite3.connect(database)) as c:
-        try:
-            tweet = c.execute('SELECT id FROM users WHERE id = ?',
-                              user_id).fetchone()
-        except sqlite3.OperationalError:
-            logging.error('query failed')
-    return user
-
-
-def oauth_login(consumer_key,
-                consumer_secret,
-                access_token,
-                access_token_secret,
-                token_file='auth/twitter.oauth'):
-    '''
-    Taking a shortcut to use the access tokens directly instead of
-    doing the full OAuth procedure. Since I'm the only user of the
-    application, that should be fine
-    '''
-    logging.debug('trying to authenticate with Twitter via OAuth')
-    auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
-    auth.secure = True
-    auth.set_access_token(access_token, access_token_secret)
-
-    return tweepy.API(auth)
-
-
-
 if __name__ == '__main__':
     init_logger()
     db = Database('tweet.db')
-    # api = oauth_login(settings.TWITTER_CONSUMER_KEY,
-    #                   settings.TWITTER_CONSUMER_SECRET,
-    #                   settings.TWITTER_ACCESS_TOKEN,
-    #                   settings.TWITTER_ACCESS_TOKEN_SECRET)
+    t = Twitter(db)
 
     # # TODO -- returns nothing?
     # logging.debug('API rate limiting status', api.rate_limit_status())

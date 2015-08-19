@@ -35,10 +35,11 @@ class Database():
 
     def get_tweet(self, tweet_id):
         tweet = None
+        tweet_id = str(tweet_id)
         with closing(sqlite3.connect(self.db_name)) as c:
             try:
-                tweet = c.execute('SELECT * FROM tweets WHERE id = ?',
-                                  tweet_id).fetchone()
+                tweet = c.execute('SELECT id FROM tweets WHERE id = ?',
+                                  (tweet_id,)).fetchone()
                 if tweet:
                     tweet = tweet[0]
             except sqlite3.OperationalError:
@@ -69,10 +70,11 @@ class Database():
 
     def get_user(self, user_id):
         user = None
+        user_id = str(user_id)
         with closing(sqlite3.connect(self.db_name)) as c:
             try:
-                user = c.execute('SELECT * FROM users WHERE id = ?',
-                                  user_id).fetchone()
+                user = c.execute('SELECT id FROM users WHERE id = ?',
+                                 (user_id,)).fetchone()
                 if user:
                     user = user[0]
             except sqlite3.OperationalError:

@@ -37,29 +37,39 @@ class Twitter():
         found_tweets = self.api.search(q=query, count=100, lang='en')
         for count, tweet in enumerate(found_tweets):
             if hasattr(tweet, 'retweeted_status'):
-                logging.debug("Retweet :: %d %s" % (count, tweet.text))
-                logging.debug("Original tweet was from %s and was %s" %
-                              (tweet.retweeted_status.user.screen_name,
-                               tweet.retweeted_status.text))
                 if ('RT' in tweet.retweeted_status.text):
-                    logging.debug("!!! Candidate for contest")
-                    import pdb; pdb.set_trace()
                     if ('follow' in tweet.retweeted_status.text.lower()):
-                        self.follow(tweet.retweeted_status.user.screen_name)
+                        self.follow(tweet.retweeted_status.user)
                     self.retweet(tweet)
             else:
                 print("Original :: %d %s" % (count, tweet.text))
 
     def follow(self, user):
-        # TODO -- need to check if we have been friends before
-        self.api.create_friendship(user)
-        logging.debug('started following %s' % user)
+        if self.db.get_user(user.id):
+            logging.debug('already following %d : %s ' % (user.id,
+                                                          user.screen_name))
+        else:
+            try:
+                self.api.create_friendship(user.screen_name)
+                logging.debug('started following %s' % user.screen_name)
+                self.db.add_user(user.id, user.screen_name)
+            except:
+                logging.debug('unable to follow')
+
 
     def unfollow(self, user):
         pass
 
     def retweet(self, tweet):
-        # TODO -- need to check if we have tweeted this ID before
-        self.api.retweet(tweet.retweeted_status.id)
-        logging.debug('retweeted %d : %s' % (tweet.retweeted_status.id,
-                                             tweet.retweeted_status.text))
+        if self.db.get_tweet(tweet.retweeted_status.id):
+            logging.debug('already following %d : %s ' % (tweet.retweeted_status.id,
+                                                          tweet.retweeted_status.text))
+        else:
+            try:
+                self.api.retweet(tweet.retweeted_status.id)
+                logging.debug('retweeted %d : %s' % (tweet.retweeted_status.id,
+                                                     tweet.retweeted_status.text))
+                self.db.add_tweet(tweet.retweeted_status.id,
+                                  tweet.retweeted_status.text)
+            except:
+                logging.debug('unable to retweet')
